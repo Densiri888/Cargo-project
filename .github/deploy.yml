@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # 2. Set up Node.js (สำหรับทั้ง frontend และ backend)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      # 3. Install and build frontend (แก้ไขเส้นทางให้ถูกต้อง)
+      - name: Install dependencies and build frontend
+        run: |
+          cd frontend  # ตรวจสอบให้แน่ใจว่าโฟลเดอร์นี้มีอยู่จริง
+          yarn install
+          yarn build
+        working-directory: ./frontend  # ตรวจสอบให้แน่ใจว่าเส้นทางนี้ถูกต้อง
+
+      # 4. Install and build backend
+      - name: Install dependencies and build backend
+        run: |
+          cd backend
+          yarn install
+          yarn build
+        working-directory: ./backend
+
+      # 5. Deploy หรือขั้นตอนอื่นๆ
+      - name: Deploy
+        run: |
+          echo "Deploying backend and frontend"
