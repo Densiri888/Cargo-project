@@ -1,38 +1,43 @@
-name: Deploy to Production
+name: Deploy
 
 on:
   push:
     branches:
-      - main  # หรือชื่อ branch ที่คุณต้องการให้ทำงานเมื่อ push ไป
+      - main  # ทำงานเมื่อมีการ push ไปที่ branch main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # ใช้ Ubuntu ในการรัน
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. ตรวจสอบและดึงข้อมูลจาก repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # 2. ตั้งค่า SSH สำหรับการเชื่อมต่อไปยังเซิร์ฟเวอร์
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      # 2. Set up Node.js (สำหรับทั้ง frontend และ backend)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # ใช้ private key ที่เก็บใน GitHub secrets
+          node-version: '16'  # ใช้ Node.js version ที่ต้องการ
 
-      # 3. เปลี่ยนไปยังโฟลเดอร์ frontend/
-      - name: Go to frontend directory
-        run: cd frontend  # เปลี่ยนไปที่โฟลเดอร์ที่มี package.json
-
-      # 4. ติดตั้ง dependencies ด้วย Yarn
-      - name: Install dependencies
-        run: yarn install  # ติดตั้ง dependencies
-
-      # 5. Build โปรเจกต์
-      - name: Build project
-        run: yarn build  # สั่งให้ build โปรเจกต์
-
-      # 6. เชื่อมต่อกับเซิร์ฟเวอร์และ deploy
-      - name: Deploy to server
+      # 3. Install and build frontend (ทำงานในโฟลเดอร์ frontend)
+      - name: Install dependencies and build frontend
         run: |
-          ssh user@your-server-ip "cd /path/to/your/project && git pull origin main && yarn install && yarn build && pm2 restart your-app-name"
+          cd frontend  # เข้าไปที่โฟลเดอร์ frontend
+          yarn install  # ติดตั้ง dependencies
+          yarn build  # สร้างโปรเจกต์
+        working-directory: ./frontend  # กำหนด working directory ให้เป็น frontend
+
+      # 4. Install and build backend (ทำงานในโฟลเดอร์ backend)
+      - name: Install dependencies and build backend
+        run: |
+          cd backend  # เข้าไปที่โฟลเดอร์ backend
+          yarn install  # ติดตั้ง dependencies
+          yarn build  # สร้างโปรเจกต์
+        working-directory: ./backend  # กำหนด working directory ให้เป็น backend
+
+      # 5. Deploy หรือขั้นตอนอื่นๆ
+      - name: Deploy backend and frontend (ถ้ามี)
+        run: |
+          # ขั้นตอนการ deploy หรือคำสั่งอื่นๆ ที่คุณต้องการ
+          echo "Deploying backend and frontend"
